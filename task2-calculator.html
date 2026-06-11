@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator — CodeAlpha Task 2</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f0ede6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 20% 50%, #e8d5c0 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, #d4c5e2 0%, transparent 45%);
+            pointer-events: none;
+        }
+
+        .label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.72rem;
+            color: #9c8e80;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .calc {
+            width: 340px;
+            background: #1a1814;
+            border-radius: 28px;
+            padding: 28px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.04);
+            position: relative;
+            z-index: 1;
+        }
+
+        .display {
+            background: #0e0d0b;
+            border-radius: 16px;
+            padding: 20px 20px 16px;
+            margin-bottom: 22px;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+
+        .display .expr {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.78rem;
+            color: #5a5550;
+            min-height: 1.2em;
+            margin-bottom: 8px;
+            letter-spacing: 0.05em;
+            word-break: break-all;
+            text-align: right;
+            max-width: 100%;
+        }
+
+        .display .value {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: #f5f0e8;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            word-break: break-all;
+            text-align: right;
+            transition: font-size 0.15s;
+        }
+
+        .display .value.small {
+            font-size: 1.7rem;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            height: 64px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-family: 'Syne', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            transition: all 0.12s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        button:active::after {
+            opacity: 1;
+        }
+
+        button:active {
+            transform: scale(0.94);
+        }
+
+        .btn-num {
+            background: #2a2724;
+            color: #e8e0d4;
+        }
+
+        .btn-num:hover {
+            background: #353028;
+        }
+
+        .btn-op {
+            background: #3d2f20;
+            color: #e8a855;
+        }
+
+        .btn-op:hover {
+            background: #4a3828;
+        }
+
+        .btn-eq {
+            background: #c8793a;
+            color: #fff;
+            font-size: 1.4rem;
+        }
+
+        .btn-eq:hover {
+            background: #d48540;
+        }
+
+        .btn-ac {
+            background: #2e3a2e;
+            color: #76c97c;
+        }
+
+        .btn-ac:hover {
+            background: #374537;
+        }
+
+        .btn-func {
+            background: #2a2830;
+            color: #9b8ed4;
+        }
+
+        .btn-func:hover {
+            background: #333145;
+        }
+
+        .btn-zero {
+            grid-column: span 2;
+        }
+
+        .hint {
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            color: #3a3530;
+            margin-top: 1rem;
+            letter-spacing: 0.08em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="label">CodeAlpha · Task 2</div>
+    <div class="calc">
+        <div class="display">
+            <div class="expr" id="expr"></div>
+            <div class="value" id="display">0</div>
+        </div>
+        <div class="buttons">
+            <button class="btn-ac" data-action="ac">AC</button>
+            <button class="btn-func" data-action="sign">+/−</button>
+            <button class="btn-func" data-action="percent">%</button>
+            <button class="btn-op" data-action="op" data-val="÷">÷</button>
+
+            <button class="btn-num" data-action="num" data-val="7">7</button>
+            <button class="btn-num" data-action="num" data-val="8">8</button>
+            <button class="btn-num" data-action="num" data-val="9">9</button>
+            <button class="btn-op" data-action="op" data-val="×">×</button>
+
+            <button class="btn-num" data-action="num" data-val="4">4</button>
+            <button class="btn-num" data-action="num" data-val="5">5</button>
+            <button class="btn-num" data-action="num" data-val="6">6</button>
+            <button class="btn-op" data-action="op" data-val="−">−</button>
+
+            <button class="btn-num" data-action="num" data-val="1">1</button>
+            <button class="btn-num" data-action="num" data-val="2">2</button>
+            <button class="btn-num" data-action="num" data-val="3">3</button>
+            <button class="btn-op" data-action="op" data-val="+">+</button>
+
+            <button class="btn-num btn-zero" data-action="num" data-val="0">0</button>
+            <button class="btn-num" data-action="dot">.</button>
+            <button class="btn-eq" data-action="eq">=</button>
+        </div>
+    </div>
+    <div class="hint">Keyboard supported: 0–9, + − * / Enter Backspace</div>
+
+    <script>
+        let current = '0', operator = null, prev = null, resetNext = false;
+        const display = document.getElementById('display');
+        const expr = document.getElementById('expr');
+
+        function updateDisplay() {
+            display.textContent = current;
+            display.className = 'value' + (current.length > 9 ? ' small' : '');
+        }
+
+        function inputNum(v) {
+            if (resetNext) { current = v; resetNext = false; }
+            else { current = current === '0' && v !== '.' ? v : (current.includes('.') && v === '.' ? current : current + v); }
+            updateDisplay();
+        }
+
+        function inputOp(op) {
+            if (operator && !resetNext) calculate();
+            prev = parseFloat(current);
+            operator = op;
+            resetNext = true;
+            expr.textContent = `${prev} ${op}`;
+        }
+
+        function calculate() {
+            if (operator === null || prev === null) return;
+            const a = prev, b = parseFloat(current);
+            let result;
+            if (operator === '+') result = a + b;
+            else if (operator === '−') result = a - b;
+            else if (operator === '×') result = a * b;
+            else if (operator === '÷') result = b === 0 ? 'Error' : a / b;
+            expr.textContent = `${a} ${operator} ${b} =`;
+            current = result === 'Error' ? 'Error' : String(parseFloat(result.toFixed(10)));
+            operator = null; prev = null; resetNext = true;
+            updateDisplay();
+        }
+
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const a = btn.dataset.action, v = btn.dataset.val;
+                if (a === 'num') inputNum(v);
+                else if (a === 'op') inputOp(v);
+                else if (a === 'eq') calculate();
+                else if (a === 'ac') { current = '0'; operator = null; prev = null; resetNext = false; expr.textContent = ''; updateDisplay(); }
+                else if (a === 'sign') { current = String(-parseFloat(current)); updateDisplay(); }
+                else if (a === 'percent') { current = String(parseFloat(current) / 100); updateDisplay(); }
+                else if (a === 'dot') inputNum('.');
+            });
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key >= '0' && e.key <= '9') inputNum(e.key);
+            else if (e.key === '.') inputNum('.');
+            else if (e.key === '+') inputOp('+');
+            else if (e.key === '-') inputOp('−');
+            else if (e.key === '*') inputOp('×');
+            else if (e.key === '/') { e.preventDefault(); inputOp('÷'); }
+            else if (e.key === 'Enter' || e.key === '=') calculate();
+            else if (e.key === 'Backspace') {
+                if (current.length > 1) current = current.slice(0, -1);
+                else current = '0';
+                updateDisplay();
+            } else if (e.key === 'Escape') {
+                current = '0'; operator = null; prev = null; resetNext = false; expr.textContent = ''; updateDisplay();
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery — CodeAlpha Task 1</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131a;
+            --border: #2a2a38;
+            --accent: #c8a96e;
+            --accent2: #7c6ef0;
+            --text: #e8e8f0;
+            --muted: #6b6b80;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 2.5rem 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+        }
+
+        .logo span {
+            color: var(--muted);
+            font-weight: 400;
+            font-size: 0.9rem;
+            display: block;
+            font-family: 'DM Sans', sans-serif;
+            margin-top: 2px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            padding: 2rem 4rem 0;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 0.45rem 1.2rem;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            border-radius: 100px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            letter-spacing: 0.05em;
+            transition: all 0.25s;
+            text-transform: uppercase;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+            font-weight: 500;
+        }
+
+        .gallery {
+            padding: 2.5rem 4rem;
+            columns: 4;
+            column-gap: 1.2rem;
+        }
+
+        @media(max-width: 1100px) {
+            .gallery {
+                columns: 3;
+            }
+
+            header,
+            .filters,
+            .gallery {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+        }
+
+        @media(max-width: 750px) {
+            .gallery {
+                columns: 2;
+            }
+        }
+
+        @media(max-width: 450px) {
+            .gallery {
+                columns: 1;
+            }
+        }
+
+        .gallery-item {
+            break-inside: avoid;
+            margin-bottom: 1.2rem;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.5s forwards;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gallery-item img {
+            width: 100%;
+            display: block;
+            transition: transform 0.5s cubic-bezier(.23, 1, .32, 1);
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.06);
+        }
+
+        .gallery-item .overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: flex-end;
+            padding: 1.2rem;
+        }
+
+        .gallery-item:hover .overlay {
+            opacity: 1;
+        }
+
+        .overlay-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .overlay-cat {
+            font-size: 0.72rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 2px;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .lightbox.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .lb-inner {
+            position: relative;
+            max-width: 88vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .lb-img-wrap {
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+            max-height: 80vh;
+        }
+
+        .lb-img-wrap img {
+            max-width: 80vw;
+            max-height: 80vh;
+            display: block;
+            object-fit: contain;
+        }
+
+        .lb-info {
+            margin-top: 1.2rem;
+            text-align: center;
+        }
+
+        .lb-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+        }
+
+        .lb-cat {
+            color: var(--accent);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 4px;
+        }
+
+        .lb-counter {
+            color: var(--muted);
+            font-size: 0.78rem;
+            margin-top: 6px;
+        }
+
+        .lb-close {
+            position: absolute;
+            top: -3rem;
+            right: 0;
+            width: 36px;
+            height: 36px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .lb-close:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .lb-nav {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text);
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .lb-nav:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        #lb-prev {
+            left: 2rem;
+        }
+
+        #lb-next {
+            right: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">Gallery<span>CodeAlpha — Task 1</span></div>
+    </header>
+
+    <div class="filters">
+        <button class="filter-btn active" data-cat="all">All</button>
+        <button class="filter-btn" data-cat="nature">Nature</button>
+        <button class="filter-btn" data-cat="architecture">Architecture</button>
+        <button class="filter-btn" data-cat="abstract">Abstract</button>
+        <button class="filter-btn" data-cat="animals">Animals</button>
+    </div>
+
+    <div class="gallery" id="gallery"></div>
+
+    <div class="lightbox" id="lightbox">
+        <div class="lb-inner">
+            <button class="lb-close" id="lb-close">✕</button>
+            <div class="lb-img-wrap"><img id="lb-img" src="" alt=""></div>
+            <div class="lb-info">
+                <div class="lb-title" id="lb-title"></div>
+                <div class="lb-cat" id="lb-cat"></div>
+                <div class="lb-counter" id="lb-counter"></div>
+            </div>
+        </div>
+        <button class="lb-nav" id="lb-prev">&#8592;</button>
+        <button class="lb-nav" id="lb-next">&#8594;</button>
+    </div>
+
+    <script>
+        const photos = [
+            { url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600', title: 'Mountain Peak', cat: 'nature' },
+            { url: 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=600', title: 'Glass Tower', cat: 'architecture' },
+            { url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600', title: 'Color Burst', cat: 'abstract' },
+            { url: 'https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=600', title: 'Red Fox', cat: 'animals' },
+            { url: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=600', title: 'Waterfall', cat: 'nature' },
+            { url: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600', title: 'Urban Grid', cat: 'architecture' },
+            { url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600', title: 'Wave Pattern', cat: 'abstract' },
+            { url: 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=600', title: 'Snow Leopard', cat: 'animals' },
+            { url: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600', title: 'Sunset Valley', cat: 'nature' },
+            { url: 'https://images.unsplash.com/photo-1448630360428-65456885c650?w=600', title: 'Brick & Glass', cat: 'architecture' },
+            { url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600', title: 'Geometry', cat: 'abstract' },
+            { url: 'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=600', title: 'Sea Turtle', cat: 'animals' },
+            { url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600', title: 'Forest Mist', cat: 'nature' },
+            { url: 'https://images.unsplash.com/photo-1467226632440-65f0b4957563?w=600', title: 'Cathedral', cat: 'architecture' },
+            { url: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=600', title: 'Neon Drift', cat: 'abstract' },
+            { url: 'https://images.unsplash.com/photo-1456926631375-92c8ce872def?w=600', title: 'Elephant Walk', cat: 'animals' },
+        ];
+
+        let activeFilter = 'all';
+        let currentIndex = 0;
+        let filtered = [...photos];
+
+        const gallery = document.getElementById('gallery');
+        const lightbox = document.getElementById('lightbox');
+
+        function renderGallery() {
+            filtered = activeFilter === 'all' ? photos : photos.filter(p => p.cat === activeFilter);
+            gallery.innerHTML = '';
+            filtered.forEach((p, i) => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.style.animationDelay = `${i * 0.06}s`;
+                item.innerHTML = `
+      <img src="${p.url}&auto=format&fit=crop" alt="${p.title}" loading="lazy">
+      <div class="overlay">
+        <div class="overlay-info">
+          <div class="overlay-title">${p.title}</div>
+          <div class="overlay-cat">${p.cat}</div>
+        </div>
+      </div>`;
+                item.addEventListener('click', () => openLightbox(i));
+                gallery.appendChild(item);
+            });
+        }
+
+        function openLightbox(i) {
+            currentIndex = i;
+            updateLightbox();
+            lightbox.classList.add('open');
+        }
+
+        function updateLightbox() {
+            const p = filtered[currentIndex];
+            document.getElementById('lb-img').src = p.url + '&w=1200&auto=format';
+            document.getElementById('lb-title').textContent = p.title;
+            document.getElementById('lb-cat').textContent = p.cat;
+            document.getElementById('lb-counter').textContent = `${currentIndex + 1} / ${filtered.length}`;
+        }
+
+        document.getElementById('lb-close').addEventListener('click', () => lightbox.classList.remove('open'));
+        lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.remove('open'); });
+        document.getElementById('lb-prev').addEventListener('click', () => { currentIndex = (currentIndex - 1 + filtered.length) % filtered.length; updateLightbox(); });
+        document.getElementById('lb-next').addEventListener('click', () => { currentIndex = (currentIndex + 1) % filtered.length; updateLightbox(); });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeFilter = btn.dataset.cat;
+                renderGallery();
+            });
+        });
+
+        document.addEventListener('keydown', e => {
+            if (!lightbox.classList.contains('open')) return;
+            if (e.key === 'ArrowLeft') { currentIndex = (currentIndex - 1 + filtered.length) % filtered.length; updateLightbox(); }
+            if (e.key === 'ArrowRight') { currentIndex = (currentIndex + 1) % filtered.length; updateLightbox(); }
+            if (e.key === 'Escape') lightbox.classList.remove('open');
+        });
+
+        renderGallery();
+    </script>
+</body>
+
+</html>
